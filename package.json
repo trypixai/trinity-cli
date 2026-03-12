@@ -1,0 +1,30 @@
+{
+  "name": "@trypix/trinity-cli",
+  "version": "0.1.0",
+  "description": "Maintenance runtime for Claude Code agent ecosystems — keeps .claude/knowledge/ fresh",
+  "type": "module",
+  "bin": {
+    "trinity": "./bin/trinity.js"
+  },
+  "scripts": {
+    "dev": "node bin/trinity.js",
+    "link": "npm link"
+  },
+  "keywords": [
+    "claude-code",
+    "agent-ecosystem",
+    "maintenance",
+    "knowledge-management"
+  ],
+  "author": "Ömer Ufuk",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "chalk": "^5.0.0",
+    "commander": "^12.0.0",
+    "fs-extra": "^11.0.0",
+    "ora": "^8.0.0"
+  }
+}
