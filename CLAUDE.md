@@ -1,6 +1,6 @@
-**Version**: 1.0
+**Version**: 1.1
 **Created**: 2026-03-12
-**Last Updated**: 2026-03-12
+**Last Updated**: 2026-03-13
 **Authors:** Ömer Ufuk
 
 ---
@@ -36,8 +36,13 @@ trinity health                          # Validate ecosystem integrity (read-onl
 trinity health --path /path/to/project  # Check a specific project
 trinity health --max-age-months 6       # Override staleness threshold
 
+trinity sync --from output/go/ --to .claude/knowledge/go-rules/  # Explicit paths
+trinity sync                            # Read from .trinity.json config
+trinity sync --dry-run                  # Preview without writing
+
 # During development (no npm link required)
 node bin/trinity.js health
+node bin/trinity.js sync --from ... --to ...
 ```
 
 ---
@@ -64,14 +69,13 @@ trinity-cli/
 
 ---
 
-## Design Principles
+## How It Works
 
-1. **No wizard**: Trinity reads context from `.claude/` — it never asks questions
-2. **Idempotent**: Every command is safe to run multiple times with no side effects
-3. **Read before write**: `trinity health` is always read-only. `trinity sync` writes only after validation
-4. **Fast**: Operations complete in seconds (except `trinity refresh` which triggers oracle)
-5. **Standalone**: Works without neo. Can be called by `neo update` or run independently
-6. **Atomic writes**: If any validation fails in a sync operation, nothing is written
+Trinity is a read-first maintenance tool. It inspects `.claude/knowledge/` directories and reports on ecosystem health without modifying anything (unless explicitly running `sync` or `refresh`).
+
+1. **`trinity health`** reads all docs in `.claude/knowledge/`, parses frontmatter, checks staleness via `**Created**:` date, validates structure (line count, frontmatter fields, no raw EJS tags). Output: tabular report with fresh/stale/invalid counts. Exit 0 if healthy, exit 1 if critical.
+2. **`trinity sync`** (planned) — validates oracle output, then atomically writes to `.claude/knowledge/`. Idempotent — running twice produces identical results.
+3. **`trinity refresh`** (planned) — triggers `oracle research` for stale topics, then `oracle inject` to update.
 
 ---
 
@@ -82,6 +86,10 @@ trinity-cli/
 - All staleness calculations use `**Created**:` frontmatter date, not filesystem mtime
 - Exit codes: 0 = healthy (or warnings only), 1 = critical failure
 - `.trinity.json` config file is optional — enables `trinity sync` with no flags
+- Every command is idempotent — safe to run multiple times with no side effects
+- Fast: operations complete in seconds (except `trinity refresh` which triggers oracle)
+- Standalone: works without neo. Can be called by `neo update` or run independently
+- Atomic writes: if any validation fails in a sync operation, nothing is written
 
 ---
 
@@ -109,44 +117,45 @@ trinity-cli/
 
 ### 1. Plan Mode Default
 
-- Enter plan mode for ANY new command — sync and refresh run against real projects and have broad effects
-- If a health check produces unexpected results, STOP and re-plan before adding validation logic
-- Use plan mode for validation rule changes — false positives erode trust faster than false negatives
-- Write action items to `.claude/tools/trinity-actions.md` before implementing new commands
+- Enter plan mode for ANY non-trivial change (3+ steps, architectural decisions, or cascading effects)
+- If something goes sideways, STOP and re-plan immediately — don't keep pushing
+- Use plan mode for verification sequences, not just building
+- New commands are always non-trivial — sync and refresh run against real projects with broad effects
 
 ### 2. Subagent Strategy
 
-- Use Explore subagents to inspect target `.claude/knowledge/` directories — don't read them inline
-- Offload frontmatter parsing and staleness calculations across multiple projects to parallel subagents
+- Use subagents liberally to keep the main context window clean
+- Offload research, exploration, and parallel analysis to subagents
+- One bounded scope per subagent — don't mix concerns in a single agent
 - For multi-project health checks, launch one subagent per project simultaneously
-- Trinity's own design is delegation — apply the same principle when working on it
 
 ### 3. Self-Improvement Loop
 
-- After ANY false positive in `trinity health`: update `tasks/lessons.md` with the edge case
-- Idempotency bugs are the most common trinity failure mode — document every case found
-- Review lessons before implementing `sync` or `refresh` logic
+- After ANY correction from the user: update `tasks/lessons.md` with the pattern
+- Write rules for yourself that prevent the same mistake — be specific, not vague
+- Review lessons at session start before touching code
 - Session lessons go to `tasks/lessons.md`; repeating patterns go to `trinity-actions.md`
 
 ### 4. Verification Before Done
 
-- After any `trinity health` change: run it against at least 2 real `.claude/knowledge/` directories
+- Never mark a task complete without proving it works
+- Run tests, check logs, demonstrate correctness — not just "it compiles"
+- Ask yourself: "Would a staff engineer approve this?"
 - For sync changes: run twice against the same target — output must be identical (strict idempotency)
-- After validation rule changes: test with a deliberately malformed doc to confirm detection works
-- Ask yourself: "Would `trinity health` run cleanly in CI with no side effects?"
 
 ### 5. Demand Elegance (Balanced)
 
-- For validation rules: ask "can this check be expressed as a one-line predicate?"
-- If the health report output is hard to parse, fix the format — both humans and neo read it
-- Skip elegance reviews for exit code fixes or threshold constant changes
+- For non-trivial changes: pause and ask "Is there a more elegant way?"
+- If a fix feels hacky: "Knowing everything I know now, implement the elegant solution"
+- Skip this for simple, obvious fixes — don't over-engineer
 - Trinity commands should feel like `git status` — clear, fast, composable, safe to run repeatedly
 
 ### 6. Autonomous Bug Fixing
 
+- When given a bug report: just fix it. Don't ask for hand-holding
+- Point at logs, errors, failing tests — then resolve them
+- Zero context switching required from the user
 - When `trinity health` reports a false positive: read the validation logic, find the edge case, fix it
-- When an idempotency bug is found: write a reproducer first, then fix — never patch blind
-- Read `trinity-actions.md` to understand the planned command contract before implementing
 
 ---
 
@@ -155,7 +164,7 @@ trinity-cli/
 1. **Plan First**: Write plan to `tasks/todo.md` with checkable items
 2. **Verify Plan**: Check in before starting implementation
 3. **Track Progress**: Mark items complete as you go — also update `trinity-actions.md`
-4. **Explain Changes**: State which action item (T-N) each change addresses
+4. **Explain Changes**: State which action item (`T-N`) each change addresses
 5. **Document Results**: Add review section to `tasks/todo.md`
 6. **Capture Lessons**: Update `tasks/lessons.md` after corrections
 
@@ -163,6 +172,6 @@ trinity-cli/
 
 ## Core Principles
 
-- **Simplicity First**: Every trinity command does one thing. No hidden side effects.
-- **No Laziness**: Read-only means read-only. Prove idempotency before shipping any write command.
-- **Minimal Impact**: A health check must never mutate state. A sync must never overwrite valid data.
+- **Simplicity First**: Make every change as simple as possible. Every trinity command does one thing — no hidden side effects.
+- **No Laziness**: Find root causes. No temporary fixes. Read-only means read-only — prove idempotency before shipping any write command.
+- **Minimal Impact**: Changes should only touch what's necessary. A health check must never mutate state — a sync must never overwrite valid data.

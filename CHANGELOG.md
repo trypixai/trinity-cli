@@ -5,6 +5,15 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), [SemVer](https
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-03-13
+
+### Added
+- `trinity sync` command (T-01): push oracle output to `.claude/knowledge/` via `oracle inject`
+- `.trinity.json` config file support: define stack mappings for zero-flag `trinity sync`
+- `--dry-run` flag: preview what would be synced without writing
+- `.claude/trinity-log.md` auto-maintained sync log with timestamped entries
+- Multi-stack support: `.trinity.json` can define multiple stacks, all synced in one run
+
 ## [0.1.0] - 2026-03-12
 
 ### Added
