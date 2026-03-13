@@ -53,9 +53,6 @@ trinity-cli/
 │   │   ├── health.js                  # trinity health (T-02)
 │   │   ├── sync.js                    # trinity sync (T-01) — planned
 │   │   └── refresh.js                 # trinity refresh (T-03) — planned
-│   ├── readers/
-│   │   ├── context-reader.js          # reads .claude/knowledge/ frontmatter
-│   │   └── index-reader.js            # reads _index.md from knowledge dirs
 │   └── utils/
 │       ├── staleness.js               # staleness calculation (Created date → age)
 │       └── validators.js              # doc validation (frontmatter, line count, EJS)
