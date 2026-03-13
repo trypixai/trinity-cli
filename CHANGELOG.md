@@ -5,6 +5,16 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), [SemVer](https
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-03-13
+
+### Added
+- `trinity refresh` command (T-03): detect stale knowledge docs and guide refresh workflow
+- `--topics` flag: filter staleness check to specific topic slugs
+- `--stale-only` flag: only report topics above age threshold
+- `--dry-run` flag: preview stale topics without taking action
+- Automatic `.trinity.json` context: when config exists, prints stack-specific manual commands
+- `oracle update` detection: checks if oracle supports incremental refresh (future O-04)
+
 ## [0.2.0] - 2026-03-13
 
 ### Added

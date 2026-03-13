@@ -40,9 +40,15 @@ trinity sync --from output/go/ --to .claude/knowledge/go-rules/  # Explicit path
 trinity sync                            # Read from .trinity.json config
 trinity sync --dry-run                  # Preview without writing
 
+trinity refresh                         # Detect stale docs, suggest refresh workflow
+trinity refresh --max-age-months 3      # Stricter threshold
+trinity refresh --topics 14-api-gateway # Check specific topics
+trinity refresh --dry-run               # Preview only
+
 # During development (no npm link required)
 node bin/trinity.js health
 node bin/trinity.js sync --from ... --to ...
+node bin/trinity.js refresh
 ```
 
 ---
