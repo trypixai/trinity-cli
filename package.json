@@ -1,6 +1,6 @@
 {
   "name": "@trypix/trinity-cli",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "Maintenance runtime for Claude Code agent ecosystems — keeps .claude/knowledge/ fresh",
   "type": "module",
   "bin": {

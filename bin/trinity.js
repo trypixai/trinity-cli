@@ -8,7 +8,7 @@ import { runRefresh } from '../src/commands/refresh.js';
 program
   .name('trinity')
   .description('Maintenance runtime for Claude Code agent ecosystems')
-  .version('0.3.0');
+  .version('1.0.0');
 
 program
   .command('health')

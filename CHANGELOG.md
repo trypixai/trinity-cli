@@ -5,6 +5,19 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), [SemVer](https
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-03-13
+
+Phase 1 complete — all commands stable and tested. First stable release.
+
+### Added
+- `trinity health` (T-02): read-only ecosystem integrity validation
+- `trinity sync` (T-01): push oracle output to `.claude/knowledge/` via `oracle inject`
+- `trinity refresh` (T-03): detect stale docs and guide refresh workflow
+- `.trinity.json` config: define stack mappings for zero-flag operation
+- `.claude/trinity-log.md`: auto-maintained sync event log
+- `--dry-run` support on `sync` and `refresh` commands
+- Staleness detection: `**Created**` and `**Last Updated**` frontmatter parsing
+
 ## [0.3.0] - 2026-03-13
 
 ### Added
